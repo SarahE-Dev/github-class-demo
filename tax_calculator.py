@@ -4,7 +4,7 @@ from typing import Dict, List
 
 # Configuration constants
 TAX_RATE = 0.08
-DISCOUNT_THRESHOLD = 1000.0
+DISCOUNT_THRESHOLD = 1000.00
 MAX_DISCOUNT = 0.15
 
 
