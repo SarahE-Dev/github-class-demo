@@ -1,83 +1,133 @@
-import math
-from decimal import Decimal
-from typing import Dict, List
+import json
+from datetime import datetime
+from typing import Optional, Tuple
 
-# Configuration constants
-TAX_RATE = 0.08
-DISCOUNT_THRESHOLD = 1000.0
-MAX_DISCOUNT = 0.15
-
-
-class TaxCalculator:
-    """Handles tax calculations for financial transactions."""
-
-    def __init__(self, base_rate: float = TAX_RATE):
-        self.base_rate = base_rate
-        self.exemptions = ["food", "medicine"]
-
-    def calculate_tax(self, amount: float, category: str = "general") -> float:
-        """Calculate sales tax at 8% with category exemptions."""
-        if category in self.exemptions:
-            return 0.0
-        return amount * self.base_rate
-
-    def calculate_with_discount(self, amount: float) -> Dict[str, float]:
-        """Apply discount for large purchases."""
-        discount = 0.0
-        if amount >= DISCOUNT_THRESHOLD:
-            discount = min(amount * 0.10, amount * MAX_DISCOUNT)
-
-        discounted_amount = amount - discount
-        tax = self.calculate_tax(discounted_amount)
-
-        return {
-            "original_amount": amount,
-            "discount": discount,
-            "discounted_amount": discounted_amount,
-            "tax": tax,
-            "total": discounted_amount + tax,
-        }
+# Regional tax configuration
+REGIONAL_TAX_RATES = {"CA": 0.10, "NY": 0.08, "TX": 0.06, "FL": 0.07}
+DEFAULT_TAX_RATE = 0.09
+PREMIUM_DISCOUNT_RATE = 0.20
 
 
-def process_transaction(items: List[Dict]) -> float:
-    """Process a list of items and calculate total with tax."""
-    calculator = TaxCalculator()
-    total = 0.0
+class AdvancedTaxCalculator:
+    """Advanced tax calculator with regional and temporal features."""
 
-    for item in items:
-        amount = item.get("price", 0.0)
-        category = item.get("category", "general")
-        tax = calculator.calculate_tax(amount, category)
-        total += amount + tax
-        print(
-            f"Item: {item.get('name', 'Unknown')} - Price: ${amount:.2f}, Tax: ${tax:.2f}"
+    def __init__(self, region: str = "CA", is_premium: bool = False):
+        self.region = region
+        self.tax_rate = REGIONAL_TAX_RATES.get(region, DEFAULT_TAX_RATE)
+        self.is_premium = is_premium
+        self.special_categories = {"luxury", "imported", "digital"}
+
+    def calculate_tax(self, amount: float, category: str = "standard") -> float:
+        """Calculate regional tax at 10% with luxury item surcharge."""
+        base_tax = amount * self.tax_rate
+
+        # Apply luxury surcharge
+        if category in self.special_categories:
+            base_tax *= 1.25  # 25% surcharge
+
+        return round(base_tax, 2)
+
+    def apply_promotional_discount(self, amount: float) -> Tuple[float, float]:
+        """Apply time-based promotional discounts."""
+        current_hour = datetime.now().hour
+        discount_rate = 0.0
+
+        # Happy hour discount (2-4 PM)
+        if 14 <= current_hour <= 16:
+            discount_rate = 0.15
+        # Premium customer discount
+        elif self.is_premium:
+            discount_rate = PREMIUM_DISCOUNT_RATE
+
+        discount = amount * discount_rate
+        return amount - discount, discount
+
+
+def calculate_transaction_total(purchase_data: dict) -> dict:
+    """Calculate comprehensive transaction totals with regional tax."""
+    region = purchase_data.get("region", "CA")
+    is_premium = purchase_data.get("premium_customer", False)
+
+    calculator = AdvancedTaxCalculator(region, is_premium)
+
+    subtotal = 0.0
+    total_tax = 0.0
+    item_details = []
+
+    for item in purchase_data.get("items", []):
+        price = item.get("amount", 0.0)
+        category = item.get("type", "standard")
+
+        # Apply promotional discount
+        discounted_price, discount = calculator.apply_promotional_discount(price)
+
+        # Calculate tax on discounted price
+        tax = calculator.calculate_tax(discounted_price, category)
+
+        subtotal += discounted_price
+        total_tax += tax
+
+        item_details.append(
+            {
+                "name": item.get("description", "Item"),
+                "original_price": price,
+                "discount": discount,
+                "final_price": discounted_price,
+                "tax": tax,
+                "category": category,
+            }
         )
 
-    return total
+    return {
+        "region": region,
+        "subtotal": round(subtotal, 2),
+        "total_tax": round(total_tax, 2),
+        "grand_total": round(subtotal + total_tax, 2),
+        "items": item_details,
+        "premium_customer": is_premium,
+    }
 
 
 def main():
-    """Main application entry point."""
-    # Sample transaction data
-    transaction_items = [
-        {"name": "Laptop", "price": 1200.0, "category": "electronics"},
-        {"name": "Groceries", "price": 85.0, "category": "food"},
-        {"name": "Medicine", "price": 45.0, "category": "medicine"},
-    ]
+    """Main application with advanced features."""
+    # Complex transaction data
+    sample_transaction = {
+        "region": "CA",
+        "premium_customer": True,
+        "items": [
+            {"description": "Gaming Laptop", "amount": 2500.0, "type": "luxury"},
+            {"description": "Software License", "amount": 199.99, "type": "digital"},
+            {"description": "Import Fees", "amount": 150.0, "type": "imported"},
+            {"description": "Accessories", "amount": 75.0, "type": "standard"},
+        ],
+    }
 
-    print("=== Finance App Version A ===")
-    print("Processing transaction with basic tax calculation...")
+    print("=== Finance App Version B ===")
+    print("Processing advanced regional transaction...")
 
-    total = process_transaction(transaction_items)
-    print(f"\nTransaction Total: ${total:.2f}")
+    result = calculate_transaction_total(sample_transaction)
 
-    # Test discount calculation
-    calculator = TaxCalculator()
-    large_purchase = calculator.calculate_with_discount(1500.0)
-    print(f"\nLarge Purchase Analysis:")
-    print(f"Original: ${large_purchase['original_amount']:.2f}")
-    print(f"Discount: ${large_purchase['discount']:.2f}")
-    print(f"Final Total: ${large_purchase['total']:.2f}")
+    print(f"\nRegion: {result['region']}")
+    print(f"Premium Customer: {result['premium_customer']}")
+    print(f"Subtotal: ${result['subtotal']:.2f}")
+    print(f"Total Tax: ${result['total_tax']:.2f}")
+    print(f"Grand Total: ${result['grand_total']:.2f}")
+
+    print("\nItem Breakdown:")
+    for item in result["items"]:
+        print(
+            f"  {item['name']}: ${item['original_price']:.2f} -> "
+            f"${item['final_price']:.2f} (tax: ${item['tax']:.2f})"
+        )
+
+    # Test different regions
+    print("\n--- Regional Comparison ---")
+    for region in ["NY", "TX", "FL"]:
+        test_data = sample_transaction.copy()
+        test_data["region"] = region
+        test_data["premium_customer"] = False
+        regional_result = calculate_transaction_total(test_data)
+        print(f"{region}: Total = ${regional_result['grand_total']:.2f}")
 
 
 if __name__ == "__main__":
