@@ -120,6 +120,12 @@ If pre-commit hooks fail:
 3. Stage the changes: `git add .`
 4. Commit again: `git commit -m "your message"`
 
+### CI/CD Failures
+If GitHub Actions CI/CD fails:
+1. Check that you're not committing the `.venv` directory
+2. Ensure all dependencies are in `requirements.txt` and `requirements-dev.txt`
+3. The CI excludes `.venv` from linting to avoid false positives
+
 ### Skipping Hooks (Not Recommended)
 In emergencies, you can skip hooks with:
 ```bash
@@ -130,6 +136,17 @@ git commit --no-verify -m "emergency commit"
 To update pre-commit hooks to latest versions:
 ```bash
 pre-commit autoupdate
+```
+
+### Virtual Environment Issues
+If you encounter issues with the virtual environment:
+```bash
+# Clean and recreate virtual environment
+rm -rf .venv
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+pre-commit install
 ```
 
 ## Best Practices
