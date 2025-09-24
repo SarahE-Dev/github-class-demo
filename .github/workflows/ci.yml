@@ -52,7 +52,7 @@ jobs:
 
     - name: Type checking with mypy
       run: |
-        mypy *.py --ignore-missing-imports
+        python -m mypy *.py --ignore-missing-imports
 
     - name: Security check with bandit
       run: |
