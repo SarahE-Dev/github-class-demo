@@ -1,4 +1,5 @@
 """Tax calculator module for financial transactions."""
+
 from datetime import datetime
 from typing import Dict, Tuple
 
