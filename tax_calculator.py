@@ -1,5 +1,5 @@
-import math
-from decimal import Decimal
+"""Tax calculator module for financial transactions."""
+
 from typing import Dict, List
 
 # Configuration constants
@@ -11,7 +11,12 @@ MAX_DISCOUNT = 0.15
 class TaxCalculator:
     """Handles tax calculations for financial transactions."""
 
-    def __init__(self, base_rate: float = TAX_RATE):
+    def __init__(self, base_rate: float = TAX_RATE) -> None:
+        """Initialize tax calculator with base rate and exemptions.
+
+        Args:
+            base_rate: Tax rate to apply (default: TAX_RATE)
+        """
         self.base_rate = base_rate
         self.exemptions = ["food", "medicine"]
 
@@ -50,13 +55,14 @@ def process_transaction(items: List[Dict]) -> float:
         tax = calculator.calculate_tax(amount, category)
         total += amount + tax
         print(
-            f"Item: {item.get('name', 'Unknown')} - Price: ${amount:.2f}, Tax: ${tax:.2f}"
+            f"Item: {item.get('name', 'Unknown')} - "
+            f"Price: ${amount: .2f}, Tax: ${tax: .2f}"
         )
 
     return total
 
 
-def main():
+def main() -> None:
     """Main application entry point."""
     # Sample transaction data
     transaction_items = [
@@ -69,15 +75,15 @@ def main():
     print("Processing transaction with basic tax calculation...")
 
     total = process_transaction(transaction_items)
-    print(f"\nTransaction Total: ${total:.2f}")
+    print(f"\nTransaction Total: ${total: .2f}")
 
     # Test discount calculation
     calculator = TaxCalculator()
     large_purchase = calculator.calculate_with_discount(1500.0)
-    print(f"\nLarge Purchase Analysis:")
-    print(f"Original: ${large_purchase['original_amount']:.2f}")
-    print(f"Discount: ${large_purchase['discount']:.2f}")
-    print(f"Final Total: ${large_purchase['total']:.2f}")
+    print("\nLarge Purchase Analysis:")
+    print(f"Original: ${large_purchase['original_amount']: .2f}")
+    print(f"Discount: ${large_purchase['discount']: .2f}")
+    print(f"Final Total: ${large_purchase['total']: .2f}")
 
 
 if __name__ == "__main__":
