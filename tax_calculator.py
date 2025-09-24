@@ -52,6 +52,7 @@ class AdvancedTaxCalculator:
             discount_rate = PREMIUM_DISCOUNT_RATE
 
         discount = amount * discount_rate
+        print(f"Discount: {discount}")
         return amount - discount, discount
 
 
