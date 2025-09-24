@@ -1,0 +1,3 @@
+# Production dependencies
+# No external dependencies for the current tax_calculator.py
+# Add dependencies here as the project grows

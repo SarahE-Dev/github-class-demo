@@ -1,6 +1,6 @@
 ## 📝 Description
 <!-- Provide a short summary of the changes in this PR -->
-- 
+-
 
 ## 🔗 Related Issue / Ticket
 <!-- Link to issue or ticket number if applicable -->
